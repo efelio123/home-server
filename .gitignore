@@ -1,0 +1,31 @@
+# Secrets and local environment configuration
+.env
+.env.*
+!.env.example
+
+# Local backups, logs, and cloud-sync artifacts
+backups/
+logs/
+Google Drive/
+GoogleDrive/
+
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+*.before-auth
+
+# Docker and database-generated data
+postgres_data/
+data/
+*.pid
+
+# macOS and editor files
+.DS_Store
+.idea/
+.vscode/

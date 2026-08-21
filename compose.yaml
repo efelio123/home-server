@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    env_file: .env
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homeserver -d home_server"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./python-api
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_USERNAME: ${APP_USERNAME}
+      APP_PASSWORD_HASH: ${APP_PASSWORD_HASH}
+      APP_SESSION_SECRET: ${APP_SESSION_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

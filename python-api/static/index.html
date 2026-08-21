@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Server Notes</title>
+  </head>
+  <body>
+    <section id="login-section">
+      <h1>Home Server Notes</h1>
+      <form id="login-form">
+        <label for="username">Username</label>
+        <input id="username" autocomplete="username" required />
+
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
+
+        <button type="submit">Sign in</button>
+        <p id="login-error" hidden></p>
+      </form>
+    </section>
+
+    <main id="app-section" hidden>
+      <header>
+        <h1>Home Server Notes</h1>
+        <button id="logout-button" type="button">Sign out</button>
+      </header>
+
+      <form id="note-form">
+        <label for="note-body">New note</label>
+        <input id="note-body" required />
+        <button type="submit">Add note</button>
+      </form>
+
+      <h2>Saved notes</h2>
+      <ul id="notes"></ul>
+    </main>
+
+    <script>
+      const loginSection = document.querySelector("#login-section");
+      const appSection = document.querySelector("#app-section");
+      const loginForm = document.querySelector("#login-form");
+      const loginError = document.querySelector("#login-error");
+      const noteForm = document.querySelector("#note-form");
+      const notesList = document.querySelector("#notes");
+
+      function showLogin() {
+        appSection.hidden = true;
+        loginSection.hidden = false;
+      }
+
+      function showApp() {
+        loginSection.hidden = true;
+        appSection.hidden = false;
+      }
+
+      async function loadNotes() {
+        const response = await fetch("/notes");
+
+        if (!response.ok) {
+          showLogin();
+          return;
+        }
+
+        const notes = await response.json();
+        notesList.innerHTML = "";
+
+        for (const note of notes) {
+          const item = document.createElement("li");
+          item.textContent =
+            `${note.body} — ${new Date(note.created_at).toLocaleString()}`;
+          notesList.appendChild(item);
+        }
+      }
+
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        loginError.hidden = true;
+
+        const response = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: document.querySelector("#username").value,
+            password: document.querySelector("#password").value,
+          }),
+        });
+
+        if (!response.ok) {
+          loginError.textContent = "Invalid username or password.";
+          loginError.hidden = false;
+          return;
+        }
+
+        loginForm.reset();
+        showApp();
+        await loadNotes();
+      });
+
+      noteForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const input = document.querySelector("#note-body");
+        const response = await fetch("/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ body: input.value }),
+        });
+
+        if (!response.ok) {
+          showLogin();
+          return;
+        }
+
+        input.value = "";
+        await loadNotes();
+      });
+
+      document.querySelector("#logout-button").addEventListener("click", async () => {
+        await fetch("/logout", { method: "POST" });
+        showLogin();
+      });
+
+      async function start() {
+        const response = await fetch("/me");
+
+        if (response.ok) {
+          showApp();
+          await loadNotes();
+        } else {
+          showLogin();
+        }
+      }
+
+      start();
+    </script>
+  </body>
+</html>
