@@ -1,10 +1,11 @@
 import os
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+from typing import Literal
 
 import jwt
 from dotenv import load_dotenv
-from fastapi import Cookie, Depends, FastAPI, HTTPException, Response, status
+from fastapi import Cookie, Depends, FastAPI, HTTPException, Query, Response, status
 from psycopg import connect
 from psycopg.rows import dict_row
 from pydantic import BaseModel
@@ -26,6 +27,17 @@ class NoteCreate(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+    
+class ChoreResponse(BaseModel):
+    id: int
+    title: str
+    details: str | None
+    assignee_id: int | None
+    assignee_name: str | None
+    due_date: date | None
+    status: Literal["open", "completed"]
+    completed_at: datetime | None
+    created_at: datetime
 
 def get_db_connection():
     return connect(
@@ -127,5 +139,39 @@ def create_note(note: NoteCreate, username: str = Depends(require_login)):
 
         return result.fetchone()
 
+@app.get("/chores", response_model=list[ChoreResponse])
+def list_chores(
+    chore_status: Literal["open", "completed"] | None = Query(
+        default=None,
+        alias="status"
+    ),
+    _username: str = Depends(require_login),
+):
+    with get_db_connection() as connection:
+        result = connection.execute(
+            """
+            SELECT
+                chores.id,
+                chores.title,
+                chores.details,
+                chores.assignee_id,
+                household_members.display_name AS assignee_name,
+                chores.due_date,
+                chores.status,
+                chores.completed_at,
+                chores.created_at
+            FROM chores
+            LEFT JOIN household_members
+                ON household_members.id = chores.assignee_id
+            WHERE (%s::text IS NULL OR chores.status = %s)
+            ORDER BY
+                (chores.status = 'completed'),
+                chores.due_date NULLS LAST,
+                chores.id
+            """,
+            (chore_status, chore_status)
+        )
+        
+        return result.fetchall()
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
