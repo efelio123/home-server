@@ -153,3 +153,40 @@ h1 {
     padding: 2rem 1.25rem;
   }
 }
+
+.dashboard-card__list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dashboard-card__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e3e8f0;
+}
+
+.dashboard-card__list li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.dashboard-card__list div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.dashboard-card__list span,
+.dashboard-card__list time {
+  color: #52607a;
+  font-size: 0.875rem;
+}
+
+.dashboard-card__error {
+  color: #b42318;
+}
