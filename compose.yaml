@@ -25,6 +25,7 @@ services:
       APP_USERNAME: ${APP_USERNAME}
       APP_PASSWORD_HASH: ${APP_PASSWORD_HASH}
       APP_SESSION_SECRET: ${APP_SESSION_SECRET}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
     depends_on:
       postgres:
         condition: service_healthy

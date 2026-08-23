@@ -10,11 +10,20 @@ from psycopg import connect
 from psycopg.rows import dict_row
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pwdlib import PasswordHash
 
 load_dotenv()
 
 app = FastAPI(title="Home Server API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[os.environ["FRONTEND_ORIGIN"]],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 password_hash = PasswordHash.recommended()
 session_cookie_name = "home_server_session"
