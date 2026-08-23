@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Query, Response, status
 from psycopg import connect
 from psycopg.rows import dict_row
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pwdlib import PasswordHash
@@ -33,10 +33,34 @@ session_duration = timedelta(days=7)
 class NoteCreate(BaseModel):
     body: str
 
+class ShoppingListItemCreate(BaseModel):
+    item_name: str = Field(min_length=1, max_length=160)
+    quantity: float = Field(default=1, gt=0)
+    unit: str | None = Field(default=None, max_length=30)
+    category: str | None = Field(default=None, max_length=60)
+
+    @field_validator("item_name")
+    @classmethod
+    def item_name_must_not_be_blank(cls, value: str) -> str:
+        cleaned_value = value.strip()
+
+        if not cleaned_value:
+            raise ValueError("item_name must not be blank")
+
+        return cleaned_value
+
+    @field_validator("unit", "category")
+    @classmethod
+    def normalize_optional_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+
+        return value.strip() or None
+
 class LoginRequest(BaseModel):
     username: str
     password: str
-    
+
 class ChoreResponse(BaseModel):
     id: int
     title: str
@@ -222,5 +246,32 @@ def list_shopping_items(
         )
 
         return result.fetchall()
+
+@app.post("/shopping-list-items", response_model=ShoppingListItemResponse, status_code=status.HTTP_201_CREATED)
+def add_shopping_list_item(item: ShoppingListItemCreate, _username: str = Depends(require_login)):
+    with get_db_connection() as connection:
+        result = connection.execute(
+            """
+            INSERT INTO shopping_list_items (
+                item_name,
+                quantity,
+                unit,
+                category
+            )
+            VALUES (%s, %s, %s, %s)
+            RETURNING
+                id,
+                item_name,
+                quantity,
+                unit,
+                category,
+                is_purchased,
+                purchased_at,
+                created_at
+            """,
+            (item.item_name, item.quantity, item.unit, item.category),
+        )
+
+        return result.fetchone()
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
