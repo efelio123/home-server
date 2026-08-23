@@ -1,4 +1,4 @@
-import type { Chore, ShoppingListItem } from './types';
+import type { Chore, ShoppingListItem, AuthenticatedUser } from './types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -15,8 +15,9 @@ export class ApiError extends Error {
     }
 }
 
-async function apiRequest<T>(path: string): Promise<T> {
+async function apiRequest<T>(path: string, options: RequestInit = {},): Promise<T> {
     const response = await fetch(`${apiBaseUrl}${path}`, {
+        ...options,
         credentials: 'include',
     });
 
@@ -28,6 +29,29 @@ async function apiRequest<T>(path: string): Promise<T> {
     }
 
     return response.json() as Promise<T>;
+}
+
+export function getCurrentUser(): Promise<AuthenticatedUser> {
+    return apiRequest<AuthenticatedUser>('/me');
+}
+
+export function login(
+    username: string,
+    password: string,
+): Promise<AuthenticatedUser> {
+    return apiRequest<AuthenticatedUser>('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+    });
+}
+
+export function logout(): Promise<{ status: string}> {
+    return apiRequest<{ status: string }>('/logout', {
+        method: 'POST',
+    });
 }
 
 export function getOpenChores(): Promise<Chore[]> {

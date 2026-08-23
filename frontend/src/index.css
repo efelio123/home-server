@@ -190,3 +190,80 @@ h1 {
 .dashboard-card__error {
   color: #b42318;
 }
+
+.app-message,
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.login-card {
+  width: min(100%, 420px);
+  padding: 2rem;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 12px 40px rgb(23 32 51 / 12%);
+}
+
+.login-card__icon {
+  margin-bottom: 1rem;
+  color: #0e7490;
+  font-size: 2rem;
+}
+
+.login-form {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 2rem;
+}
+
+.login-form input {
+  margin-bottom: 0.8rem;
+  padding: 0.7rem;
+  border: 1px solid #c9d2df;
+  border-radius: 0.4rem;
+}
+
+.login-form button,
+.sidebar__logout {
+  padding: 0.7rem;
+  border: 0;
+  border-radius: 0.4rem;
+  color: #fff;
+  background: #0e7490;
+  cursor: pointer;
+}
+
+.login-form button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.login-form__error {
+  margin: 0;
+  color: #b42318;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar__footer {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
+  color: #a9c4cf;
+  font-size: 0.8rem;
+}
+
+.sidebar__logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #1f526b;
+}
