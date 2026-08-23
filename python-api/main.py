@@ -39,6 +39,16 @@ class ChoreResponse(BaseModel):
     completed_at: datetime | None
     created_at: datetime
 
+class ShoppingListItemResponse(BaseModel):
+    id: int
+    item_name: str
+    quantity: float
+    unit: str | None
+    category: str | None
+    is_purchased: bool
+    purchased_at: datetime | None
+    created_at: datetime
+
 def get_db_connection():
     return connect(
         host=os.environ["DB_HOST"],
@@ -172,6 +182,36 @@ def list_chores(
             (chore_status, chore_status)
         )
         
+        return result.fetchall()
+
+@app.get("/shopping-list-items", response_model=list[ShoppingListItemResponse])
+def list_shopping_items(
+    include_purchased: bool = Query(default=False),
+    _username: str = Depends(require_login),
+):
+    with get_db_connection() as connection:
+        result = connection.execute(
+            """
+            SELECT
+                shopping_list_items.id,
+                shopping_list_items.item_name,
+                shopping_list_items.quantity,
+                shopping_list_items.unit,
+                shopping_list_items.category,
+                shopping_list_items.is_purchased,
+                shopping_list_items.purchased_at,
+                shopping_list_items.created_at
+            FROM shopping_list_items
+            WHERE (%s OR shopping_list_items.is_purchased = FALSE)
+            ORDER BY
+                shopping_list_items.is_purchased,
+                shopping_list_items.category NULLS LAST,
+                shopping_list_items.item_name,
+                shopping_list_items.id
+            """,
+            (include_purchased,)
+        )
+
         return result.fetchall()
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
