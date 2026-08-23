@@ -1,16 +1,21 @@
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet } from "react-router";
+
+type AppLayoutProps = {
+  username: string;
+  onLogout: () => Promise<void>;
+};
 
 const navigationItems = [
-  { to: '/', label: 'Dashboard', icon: 'pi pi-home', end: true },
-  { to: '/chores', label: 'Chores', icon: 'pi pi-check-square' },
+  { to: "/", label: "Dashboard", icon: "pi pi-home", end: true },
+  { to: "/chores", label: "Chores", icon: "pi pi-check-square" },
   {
-    to: '/shopping-list',
-    label: 'Shopping List',
-    icon: 'pi pi-shopping-cart',
+    to: "/shopping-list",
+    label: "Shopping List",
+    icon: "pi pi-shopping-cart",
   },
 ];
 
-function AppLayout() {
+function AppLayout({ username, onLogout }: AppLayoutProps) {
   return (
     <div className="app-layout">
       <aside className="sidebar">
@@ -27,7 +32,7 @@ function AppLayout() {
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
+                    `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
                   }
                 >
                   <i className={item.icon} aria-hidden="true" />
@@ -37,6 +42,17 @@ function AppLayout() {
             ))}
           </ul>
         </nav>
+        <div className="sidebar__footer">
+          <span>Signed in as {username}</span>
+          <button
+            type="button"
+            className="sidebar__logout"
+            onClick={() => void onLogout()}
+          >
+            <i className="pi pi-sign-out" aria-hidden="true" />
+            Sign out
+          </button>
+        </div>
       </aside>
 
       <main className="page-content">

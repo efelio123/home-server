@@ -20,3 +20,7 @@ export type ShoppingListItem = {
   purchased_at: string | null;
   created_at: string;
 };
+
+export type AuthenticatedUser = {
+  username: string
+}
