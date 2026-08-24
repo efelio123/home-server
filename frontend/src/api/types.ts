@@ -24,3 +24,10 @@ export type ShoppingListItem = {
 export type AuthenticatedUser = {
   username: string
 }
+
+export type CreateShoppingListItemInput = {
+  item_name: string;
+  quantity: number;
+  unit: string | null;
+  category: string | null;
+}

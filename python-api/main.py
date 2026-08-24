@@ -21,7 +21,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[os.environ["FRONTEND_ORIGIN"]],
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["Content-Type"],
 )
 
@@ -56,6 +56,12 @@ class ShoppingListItemCreate(BaseModel):
             return None
 
         return value.strip() or None
+    
+class ShoppingListItemPurchaseUpdate(BaseModel):
+    is_purchased: bool
+    
+class ClearShoppingListRequest(BaseModel):
+    confirmation: Literal["CLEAR"]
 
 class LoginRequest(BaseModel):
     username: str
@@ -273,5 +279,92 @@ def add_shopping_list_item(item: ShoppingListItemCreate, _username: str = Depend
         )
 
         return result.fetchone()
+
+@app.patch(
+    "/shopping-list-items/{item_id}",
+    response_model=ShoppingListItemResponse,
+)
+def update_shopping_list_item_purchase_state(
+    item_id: int,
+    update: ShoppingListItemPurchaseUpdate,
+    _username: str = Depends(require_login),
+):
+    with get_db_connection() as connection:
+        result = connection.execute(
+            """
+            UPDATE shopping_list_items
+            SET
+                is_purchased = %s,
+                purchased_at = CASE
+                    WHEN %s then COALESCE(
+                        purchased_at,
+                        CURRENT_TIMESTAMP
+                    )
+                    ELSE NULL
+                END
+            WHERE id = %s
+            RETURNING
+                id,
+                item_name,
+                quantity,
+                unit,
+                category,
+                is_purchased,
+                purchased_at,
+                created_at
+            """,
+            (update.is_purchased, update.is_purchased, item_id),            
+        )
+        
+        item = result.fetchone()
+        
+    if item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Shopping list item not found",
+        )
+        
+    return item
+
+@app.delete(
+    "/shopping-list-items/{item_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_shopping_list_item(
+    item_id: int,
+    _username: str = Depends(require_login),
+):
+    with get_db_connection() as connection:
+        result = connection.execute(
+            """
+            DELETE FROM shopping_list_items
+            WHERE id = %s
+            RETURNING id
+            """,
+            (item_id,),            
+        )
+        
+        deleted_item = result.fetchone()
+        
+    if deleted_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Shopping list item not found",
+        )
+        
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.delete(
+    "/shopping-list-items",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def clear_shopping_list(
+    request: ClearShoppingListRequest,
+    _username: str = Depends(require_login),
+):
+    with get_db_connection() as connection:
+        connection.execute("DELETE FROM shopping_list_items")
+        
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

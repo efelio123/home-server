@@ -1,4 +1,4 @@
-import type { Chore, ShoppingListItem, AuthenticatedUser } from './types';
+import type { Chore, ShoppingListItem, AuthenticatedUser, CreateShoppingListItemInput } from './types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -60,4 +60,16 @@ export function getOpenChores(): Promise<Chore[]> {
 
 export function getShoppingListItems(): Promise<ShoppingListItem[]> {
     return apiRequest<ShoppingListItem[]>('/shopping-list-items');
+}
+
+export function createShoppingListItem(
+    item: CreateShoppingListItemInput,
+): Promise<ShoppingListItem> {
+    return apiRequest<ShoppingListItem>('/shopping-list-items', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(item),
+  });
 }
