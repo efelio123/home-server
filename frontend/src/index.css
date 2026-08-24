@@ -267,3 +267,53 @@ h1 {
   gap: 0.5rem;
   background: #1f526b;
 }
+
+.shopping-list-page {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1.2fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.shopping-list-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.shopping-list-form input {
+  margin-bottom: 0.7rem;
+  padding: 0.65rem;
+  border: 1px solid #c9d2df;
+  border-radius: 0.4rem;
+}
+
+.shopping-list-form label span {
+  color: #52607a;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.shopping-list-form button {
+  padding: 0.7rem;
+  border: 0;
+  border-radius: 0.4rem;
+  color: #fff;
+  background: #0e7490;
+  cursor: pointer;
+}
+
+.shopping-list-form button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.shopping-list-form__error {
+  margin: 0;
+  color: #b42318;
+}
+
+@media (max-width: 850px) {
+  .shopping-list-page {
+    grid-template-columns: 1fr;
+  }
+}
