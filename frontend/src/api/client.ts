@@ -28,6 +28,10 @@ async function apiRequest<T>(path: string, options: RequestInit = {},): Promise<
         );
     }
 
+    if (response.status === 204) {
+        return undefined as T;
+    }
+
     return response.json() as Promise<T>;
 }
 
@@ -58,8 +62,14 @@ export function getOpenChores(): Promise<Chore[]> {
     return apiRequest<Chore[]>('/chores?status=open');
 }
 
-export function getShoppingListItems(): Promise<ShoppingListItem[]> {
-    return apiRequest<ShoppingListItem[]>('/shopping-list-items');
+export function getShoppingListItems(
+    includePurchased = false,
+): Promise<ShoppingListItem[]> {
+  const path = includePurchased
+    ? '/shopping-list-items?include_purchased=true'
+    : '/shopping-list-items';
+
+    return apiRequest<ShoppingListItem[]>(path);
 }
 
 export function createShoppingListItem(
@@ -71,5 +81,34 @@ export function createShoppingListItem(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(item),
+  });
+}
+
+export function updateShoppingListItemPurchaseState(
+    itemId: number,
+    isPurchased: boolean,
+): Promise<ShoppingListItem> {
+  return apiRequest<ShoppingListItem>(`/shopping-list-items/${itemId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ is_purchased: isPurchased }),
+  });
+}
+
+export function deleteShoppingListItem(itemId: number): Promise<void> {
+  return apiRequest<void>(`/shopping-list-items/${itemId}`, {
+    method: 'DELETE',
+  });
+}
+
+export function clearShoppingList(): Promise<void> {
+  return apiRequest<void>('/shopping-list-items', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ confirmation: 'CLEAR' }),
   });
 }
