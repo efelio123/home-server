@@ -31,3 +31,13 @@ export type CreateShoppingListItemInput = {
   unit: string | null;
   category: string | null;
 }
+
+export type Weather = {
+  location_name: string;
+  temperature_f: number;
+  apparent_temperature_f: number;
+  condition: string;
+  is_day: boolean;
+  today_high_f: number;
+  today_low_f: number;
+};

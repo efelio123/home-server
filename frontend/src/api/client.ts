@@ -1,4 +1,4 @@
-import type { Chore, ShoppingListItem, AuthenticatedUser, CreateShoppingListItemInput } from './types';
+import type { Chore, ShoppingListItem, AuthenticatedUser, CreateShoppingListItemInput, Weather } from './types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -111,4 +111,8 @@ export function clearShoppingList(): Promise<void> {
     },
     body: JSON.stringify({ confirmation: 'CLEAR' }),
   });
+}
+
+export function getWeather(): Promise<Weather> {
+  return apiRequest<Weather>('/weather');
 }
