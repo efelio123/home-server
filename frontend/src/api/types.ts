@@ -41,3 +41,51 @@ export type Weather = {
   today_high_f: number;
   today_low_f: number;
 };
+
+export interface MealPlanIngredient {
+  id: number;
+  ingredient_name: string;
+  quantity: number;
+  unit: string | null;
+  quantity_on_hand: number;
+}
+
+export interface MealPlanEntry {
+  id: number;
+  recipe_id: number;
+  recipe_name: string;
+  planned_for: string;
+  meal_slot: string;
+  created_at: string;
+  ingredients: MealPlanIngredient[];
+}
+
+export interface RecipeIngredient {
+  id: number;
+  ingredient_name: string;
+  quantity: number;
+  unit: string | null;
+}
+
+export interface RecipeSummary {
+  id: number;
+  name: string;
+  instructions: string | null;
+  created_at: string;
+}
+
+export interface RecipeDetail extends RecipeSummary {
+  ingredients: RecipeIngredient[];
+}
+
+export interface IngredientOnHandInput {
+  recipe_ingredient_id: number;
+  quantity_on_hand: number;
+}
+
+export interface CreateMealPlanEntryInput {
+  recipe_id: number;
+  planned_for: string;
+  meal_slot: "breakfast" | "lunch" | "dinner";
+  on_hand_quantities: IngredientOnHandInput[];
+}

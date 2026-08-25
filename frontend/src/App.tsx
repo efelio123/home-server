@@ -7,6 +7,7 @@ import ChoresPage from "./pages/ChoresPage";
 import DashboardPage from "./pages/DashboardPage";
 import ShoppingListPage from "./pages/ShoppingListPage";
 import LoginPage from "./pages/LoginPage";
+import { MealPlanPage } from "./pages/MealPlanPage";
 
 function App() {
   const [currentUser, setCurrentUser] = useState<AuthenticatedUser | null>(
@@ -76,6 +77,7 @@ function App() {
         <Route index element={<DashboardPage />} />
         <Route path="chores" element={<ChoresPage />} />
         <Route path="shopping-list" element={<ShoppingListPage />} />
+        <Route path="meal-plan" element={<MealPlanPage />} />
       </Route>
 
       <Route
