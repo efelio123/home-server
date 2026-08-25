@@ -8,6 +8,7 @@ import { ProgressSpinner } from "primereact/progressspinner";
 
 import { createMealPlanEntry, getRecipe, getRecipes } from "../api/client";
 import type { RecipeDetail, RecipeSummary } from "../api/types";
+import { CreateRecipeDialog } from "./CreateRecipeDialog";
 
 interface AddMealDialogProps {
   plannedFor: string;
@@ -34,6 +35,8 @@ export function AddMealDialog({
   const [isLoadingRecipe, setIsLoadingRecipe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isCreateRecipeDialogVisible, setIsCreateRecipeDialogVisible] =
+    useState(false);
 
   useEffect(() => {
     if (!visible) {
@@ -94,6 +97,17 @@ export function AddMealDialog({
     onHide();
   }
 
+  function handleRecipeCreated(recipe: RecipeDetail) {
+    setRecipes((current) =>
+      [...current, recipe].sort((first, second) =>
+        first.name.localeCompare(second.name),
+      ),
+    );
+    setSelectedRecipeId(recipe.id);
+    setSelectedRecipe(recipe);
+    setQuantitiesOnHand({});
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -126,78 +140,100 @@ export function AddMealDialog({
   }
 
   return (
-    <Dialog
-      header="Add meal"
-      modal
-      style={{ width: "min(34rem, 95vw)" }}
-      visible={visible}
-      onHide={handleHide}
-    >
-      <form onSubmit={handleSubmit}>
-        {errorMessage && <Message severity="error" text={errorMessage} />}
+    <>
+      <Dialog
+        header="Add meal"
+        modal
+        style={{ width: "min(34rem, 95vw)" }}
+        visible={visible}
+        onHide={handleHide}
+      >
+        <form onSubmit={handleSubmit}>
+          {errorMessage && <Message severity="error" text={errorMessage} />}
 
-        <div className="field">
-          <label htmlFor="recipe">Saved recipe</label>
-          <Dropdown
-            filter
-            id="recipe"
-            loading={isLoadingRecipes}
-            optionLabel="name"
-            optionValue="id"
-            options={recipes}
-            placeholder="Choose a recipe"
-            value={selectedRecipeId}
-            onChange={(event) =>
-              setSelectedRecipeId((event.value as number) ?? null)
-            }
-          />
-        </div>
+          <div className="field">
+            <label htmlFor="recipe">Saved recipe</label>
+            <Dropdown
+              filter
+              id="recipe"
+              loading={isLoadingRecipes}
+              optionLabel="name"
+              optionValue="id"
+              options={recipes}
+              placeholder="Choose a recipe"
+              value={selectedRecipeId}
+              onChange={(event) =>
+                setSelectedRecipeId((event.value as number) ?? null)
+              }
+            />
+          </div>
+          <div className="flex justify-content-end mt-2">
+            <Button
+              icon="pi pi-plus"
+              label="Create a new recipe"
+              text
+              type="button"
+              onClick={() => setIsCreateRecipeDialogVisible(true)}
+            />
+          </div>
 
-        {isLoadingRecipe && <ProgressSpinner />}
+          {isLoadingRecipe && <ProgressSpinner />}
 
-        {selectedRecipe && (
-          <>
-            <h3>Ingredients on hand</h3>
-            <p>
-              Enter what you already have. Anything missing will be added to the
-              shopping list.
-            </p>
+          {selectedRecipe && (
+            <>
+              <h3>Ingredients on hand</h3>
+              <p>
+                Enter what you already have. Anything missing will be added to
+                the shopping list.
+              </p>
 
-            {selectedRecipe.ingredients.map((ingredient) => (
-              <div className="field" key={ingredient.id}>
-                <label htmlFor={`ingredient-${ingredient.id}`}>
-                  {ingredient.ingredient_name} (need {ingredient.quantity}{" "}
-                  {ingredient.unit ?? ""})
-                </label>
-                <InputNumber
-                  id={`ingredient-${ingredient.id}`}
-                  max={ingredient.quantity}
-                  min={0}
-                  minFractionDigits={0}
-                  mode="decimal"
-                  value={quantitiesOnHand[ingredient.id] ?? 0}
-                  onValueChange={(event) =>
-                    setQuantitiesOnHand((current) => ({
-                      ...current,
-                      [ingredient.id]: event.value ?? 0,
-                    }))
-                  }
-                />
-              </div>
-            ))}
-          </>
-        )}
+              {selectedRecipe.ingredients.map((ingredient) => (
+                <div className="field" key={ingredient.id}>
+                  <label htmlFor={`ingredient-${ingredient.id}`}>
+                    {ingredient.ingredient_name} (need {ingredient.quantity}{" "}
+                    {ingredient.unit ?? ""})
+                  </label>
+                  <InputNumber
+                    id={`ingredient-${ingredient.id}`}
+                    max={ingredient.quantity}
+                    min={0}
+                    minFractionDigits={0}
+                    mode="decimal"
+                    value={quantitiesOnHand[ingredient.id] ?? 0}
+                    onValueChange={(event) =>
+                      setQuantitiesOnHand((current) => ({
+                        ...current,
+                        [ingredient.id]: event.value ?? 0,
+                      }))
+                    }
+                  />
+                </div>
+              ))}
+            </>
+          )}
 
-        <div className="flex justify-content-end gap-2 mt-4">
-          <Button label="Cancel" outlined type="button" onClick={handleHide} />
-          <Button
-            disabled={!selectedRecipe || isLoadingRecipe}
-            label="Add meal"
-            loading={isSubmitting}
-            type="submit"
-          />
-        </div>
-      </form>
-    </Dialog>
+          <div className="flex justify-content-end gap-2 mt-4">
+            <Button
+              label="Cancel"
+              outlined
+              type="button"
+              onClick={handleHide}
+            />
+            <Button
+              disabled={!selectedRecipe || isLoadingRecipe}
+              label="Add meal"
+              loading={isSubmitting}
+              type="submit"
+            />
+          </div>
+        </form>
+      </Dialog>
+
+      <CreateRecipeDialog
+        visible={isCreateRecipeDialogVisible}
+        onHide={() => setIsCreateRecipeDialogVisible(false)}
+        onCreated={handleRecipeCreated}
+      />
+    </>
   );
 }

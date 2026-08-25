@@ -7,7 +7,9 @@ import type {
     MealPlanEntry,
     RecipeDetail,
     RecipeSummary,
-    CreateMealPlanEntryInput
+    CreateMealPlanEntryInput,
+    CreateRecipeIngredientInput,
+    CreateRecipeInput
 } from './types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -144,6 +146,16 @@ export function getRecipe(recipeId: number) {
 
 export function createMealPlanEntry(input: CreateMealPlanEntryInput) {
   return apiRequest("/meal-plan-entries", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+}
+
+export function createRecipe(input: CreateRecipeInput): Promise<RecipeDetail> {
+  return apiRequest<RecipeDetail>("/recipes", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

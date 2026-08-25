@@ -180,3 +180,5 @@ export function MealPlanPage() {
     </section>
   );
 }
+
+export default MealPlanPage

@@ -1,0 +1,33 @@
+.recipe-library-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.recipe-library-page__header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.recipe-library-page__header h1,
+.recipe-library-page__header p {
+  margin: 0;
+}
+
+.recipe-library-page__header p {
+  color: var(--text-color-secondary);
+  margin-top: 0.35rem;
+}
+
+.recipe-library-page__loading {
+  display: grid;
+  min-height: 16rem;
+  place-items: center;
+}
+
+.recipe-library-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}

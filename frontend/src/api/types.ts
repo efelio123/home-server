@@ -89,3 +89,15 @@ export interface CreateMealPlanEntryInput {
   meal_slot: "breakfast" | "lunch" | "dinner";
   on_hand_quantities: IngredientOnHandInput[];
 }
+
+export interface CreateRecipeIngredientInput {
+  ingredient_name: string;
+  quantity: number;
+  unit: string | null;
+}
+
+export interface CreateRecipeInput {
+  name: string;
+  instructions: string | null;
+  ingredients: CreateRecipeIngredientInput[];
+}
