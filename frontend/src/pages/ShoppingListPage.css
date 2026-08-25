@@ -79,3 +79,8 @@
   background: transparent;
   cursor: pointer;
 }
+
+.meal-plan-day__add {
+  margin-top: 1rem;
+  width: 100%;
+}

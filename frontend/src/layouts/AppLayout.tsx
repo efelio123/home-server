@@ -13,6 +13,16 @@ const navigationItems = [
     label: "Shopping List",
     icon: "pi pi-shopping-cart",
   },
+  {
+    to: "/meal-plan",
+    label: "Meal Planning",
+    icon: "pi pi-calendar",
+  },
+  {
+    to: "/recipes",
+    label: "Recipes",
+    icon: "pi pi-book",
+  },
 ];
 
 function AppLayout({ username, onLogout }: AppLayoutProps) {

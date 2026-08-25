@@ -1,4 +1,16 @@
-import type { Chore, ShoppingListItem, AuthenticatedUser, CreateShoppingListItemInput, Weather } from './types';
+import type {
+    Chore,
+    ShoppingListItem,
+    AuthenticatedUser,
+    CreateShoppingListItemInput,
+    Weather,
+    MealPlanEntry,
+    RecipeDetail,
+    RecipeSummary,
+    CreateMealPlanEntryInput,
+    CreateRecipeIngredientInput,
+    CreateRecipeInput
+} from './types';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -22,9 +34,10 @@ async function apiRequest<T>(path: string, options: RequestInit = {},): Promise<
     });
 
     if (!response.ok) {
+        const errorBody = await response.text();
+
         throw new ApiError(
-            response.status,
-            `API request failed with status ${response.status}.`,
+            response.status, `API request failed with status ${response.status}: ${errorBody}`,
         );
     }
 
@@ -113,6 +126,40 @@ export function clearShoppingList(): Promise<void> {
   });
 }
 
+export function getMealPlanEntries(startDate: string) {
+  return apiRequest<MealPlanEntry[]>(
+    `/meal-plan-entries?start_date=${encodeURIComponent(startDate)}`,
+  );
+}
+
 export function getWeather(): Promise<Weather> {
   return apiRequest<Weather>('/weather');
+}
+
+export function getRecipes() {
+  return apiRequest<RecipeSummary[]>("/recipes");
+}
+
+export function getRecipe(recipeId: number) {
+  return apiRequest<RecipeDetail>(`/recipes/${recipeId}`);
+}
+
+export function createMealPlanEntry(input: CreateMealPlanEntryInput) {
+  return apiRequest("/meal-plan-entries", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+}
+
+export function createRecipe(input: CreateRecipeInput): Promise<RecipeDetail> {
+  return apiRequest<RecipeDetail>("/recipes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
 }
