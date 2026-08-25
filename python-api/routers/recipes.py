@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from auth import require_login
 from database import get_db_connection
@@ -29,6 +29,15 @@ class RecipeDetail(BaseModel):
     created_at: datetime
     ingredients: list[RecipeIngredientResponse]
 
+class RecipeIngredientCreate(BaseModel):
+    ingredient_name: str
+    quantity: float
+    unit: str | None = None
+
+class RecipeCreate(BaseModel):
+    name: str
+    instructions: str | None = None
+    ingredients: list[RecipeIngredientCreate]
 
 @router.get("", response_model=list[RecipeSummary])
 def list_recipes(_username: str = Depends(require_login)):
@@ -88,3 +97,49 @@ def get_recipe(
         recipe["ingredients"] = ingredients_result.fetchall()
 
         return recipe
+
+@router.post("", response_model=RecipeDetail, status_code=status.HTTP_201_CREATED)
+def add_recipe(recipe: RecipeCreate, _username: str = Depends(require_login)):
+    with get_db_connection() as connection:
+        recipe_result = connection.execute(
+            """
+            INSERT INTO recipes (
+                name,
+                instructions
+            )
+            VALUES (%s, %s)
+            RETURNING
+                id,
+                name,
+                instructions,
+                created_at
+            """,
+            (recipe.name, recipe.instructions),
+        )
+        created_recipe  = recipe_result.fetchone()
+
+        ingridient_rows = []
+        for ingredient in recipe.ingredients:
+            ingredient_result = connection.execute(
+                """
+                INSERT INTO recipe_ingredients (
+                    recipe_id,
+                    ingredient_name,
+                    quantity,
+                    unit
+                )
+                VALUES(%s, %s, %s, %s)
+                RETURNING
+                    id,
+                    ingredient_name,
+                    quantity,
+                    unit
+                """,
+                (created_recipe["id"], ingredient.ingredient_name, ingredient.quantity, ingredient.unit),
+            )
+
+            ingridient_rows.append(ingredient_result.fetchone())
+
+        created_recipe["ingredients"] = ingridient_rows
+
+        return created_recipe
