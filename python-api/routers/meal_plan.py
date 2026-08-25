@@ -1,6 +1,6 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Literal
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from auth import require_login
@@ -41,6 +41,15 @@ class MealPlanEntryResponse(BaseModel):
     created_at: datetime
     ingredients: list[MealPlanIngredientResponse]
     shopping_list_updates: list[ShoppingListUpdateResponse]
+
+class MealPlanEntryListItem(BaseModel):
+    id: int
+    recipe_id: int
+    recipe_name: str
+    planned_for: date
+    meal_slot: str
+    created_at: datetime
+    ingredients: list[MealPlanIngredientResponse]
 
 @router.post("", response_model=MealPlanEntryResponse, status_code=status.HTTP_201_CREATED)
 def create_meal_plan_entry(
@@ -230,3 +239,54 @@ def create_meal_plan_entry(
         created_entry["shopping_list_updates"] = shopping_list_updates
 
         return created_entry
+
+@router.get("", response_model=list[MealPlanEntryListItem])
+def list_meal_plan_entries(
+    start_date: date = Query(),
+    _username: str = Depends(require_login),
+):
+    with get_db_connection() as connection:
+        end_date = start_date + timedelta(days=7)
+
+        result = connection.execute(
+            """
+            SELECT
+                meal_plan_entries.id,
+                meal_plan_entries.recipe_id,
+                recipes.name AS recipe_name,
+                meal_plan_entries.planned_for,
+                meal_plan_entries.meal_slot,
+                meal_plan_entries.created_at
+            FROM meal_plan_entries
+            JOIN recipes
+                ON recipes.id = meal_plan_entries.recipe_id
+            WHERE meal_plan_entries.planned_for >= %s
+              AND meal_plan_entries.planned_for < %s
+            ORDER BY
+                meal_plan_entries.planned_for,
+                meal_plan_entries.meal_slot
+            """,
+            (start_date, end_date)
+        )
+
+        entries = result.fetchall()
+
+        for entry in entries:
+            ingredients_result = connection.execute(
+                """
+                SELECT
+                    id,
+                    ingredient_name,
+                    quantity,
+                    unit,
+                    quantity_on_hand
+                FROM meal_plan_entry_ingredients
+                WHERE meal_plan_entry_id = %s
+                ORDER BY id
+                """,
+                (entry["id"],),
+            )
+
+            entry["ingredients"] = ingredients_result.fetchall()
+
+        return entries
