@@ -17,7 +17,7 @@ from threading import Lock
 import httpx
 
 from database import get_db_connection
-from routers import auth as auth_router, recipes, shopping_list, chores, weather, notes, meal_plan
+from routers import auth as auth_router, recipes, shopping_list, chores, weather, notes, meal_plan, catalog_items
 
 
 load_dotenv()
@@ -36,6 +36,7 @@ app.include_router(auth_router.router)
 app.include_router(recipes.router)
 app.include_router(shopping_list.router)
 app.include_router(meal_plan.router)
+app.include_router(catalog_items.router)
 app.include_router(chores.router)
 app.include_router(weather.router)
 app.include_router(notes.router)
