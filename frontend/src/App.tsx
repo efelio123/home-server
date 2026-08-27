@@ -9,6 +9,8 @@ import ShoppingListPage from "./pages/ShoppingListPage";
 import LoginPage from "./pages/LoginPage";
 import MealPlanPage from "./pages/MealPlanPage";
 import RecipeLibraryPage from "./pages/RecipeLibraryPage";
+import PantryPage from "./pages/PantryPage";
+import HouseholdMembersPage from "./pages/HouseholdMembersPage";
 
 function App() {
   const [currentUser, setCurrentUser] = useState<AuthenticatedUser | null>(
@@ -80,6 +82,8 @@ function App() {
         <Route path="shopping-list" element={<ShoppingListPage />} />
         <Route path="meal-plan" element={<MealPlanPage />} />
         <Route path="recipes" element={<RecipeLibraryPage />} />
+        <Route path="pantry" element={<PantryPage />} />
+        <Route path="household-members" element={<HouseholdMembersPage />} />
       </Route>
 
       <Route

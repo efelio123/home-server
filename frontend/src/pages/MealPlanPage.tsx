@@ -3,7 +3,7 @@ import { Button } from "primereact/button";
 import { Message } from "primereact/message";
 import { ProgressSpinner } from "primereact/progressspinner";
 
-import { getMealPlanEntries } from "../api/client";
+import { deleteMealPlanEntry, getMealPlanEntries } from "../api/client";
 import type { MealPlanEntry } from "../api/types";
 import { AddMealDialog } from "../components/AddMealDialog";
 
@@ -34,12 +34,20 @@ function toDateParameter(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+const mealSlotOrder = {
+  breakfast: 1,
+  lunch: 2,
+  dinner: 3,
+} as const;
+
 export function MealPlanPage() {
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [entries, setEntries] = useState<MealPlanEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [editingEntry, setEditingEntry] = useState<MealPlanEntry | null>(null);
+  const [deletingEntryId, setDeletingEntryId] = useState<number | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
 
   const weekDays = useMemo(
@@ -80,6 +88,19 @@ export function MealPlanPage() {
   }, [weekStart, refreshVersion]);
 
   const weekEnd = addDays(weekStart, 6);
+
+  async function handleDelete(entry: MealPlanEntry) {
+    if (!window.confirm(`Delete ${entry.recipe_name} from the meal plan?`)) return;
+    setDeletingEntryId(entry.id);
+    try {
+      await deleteMealPlanEntry(entry.id);
+      setRefreshVersion((currentVersion) => currentVersion + 1);
+    } catch {
+      setErrorMessage("Unable to delete the meal. Please try again.");
+    } finally {
+      setDeletingEntryId(null);
+    }
+  }
 
   return (
     <section className="meal-plan-page">
@@ -131,7 +152,18 @@ export function MealPlanPage() {
         <div className="meal-plan-grid">
           {weekDays.map((day) => {
             const dateKey = toDateParameter(day);
-            const dayEntries = entriesByDate[dateKey] ?? [];
+            const dayEntries = [...(entriesByDate[dateKey] ?? [])].sort(
+              (firstEntry, secondEntry) =>
+                mealSlotOrder[
+                  firstEntry.meal_slot as keyof typeof mealSlotOrder
+                ] -
+                  mealSlotOrder[
+                    secondEntry.meal_slot as keyof typeof mealSlotOrder
+                  ] ||
+                (firstEntry.household_member_name ?? "Family").localeCompare(
+                  secondEntry.household_member_name ?? "Family",
+                ),
+            );
 
             return (
               <article className="meal-plan-day" key={dateKey}>
@@ -149,9 +181,21 @@ export function MealPlanPage() {
                 ) : (
                   <div className="meal-plan-day__entries">
                     {dayEntries.map((entry) => (
-                      <div className="meal-plan-entry" key={entry.id}>
+                      <div
+                        className={`meal-plan-entry ${
+                          entry.household_member_id === null
+                            ? "meal-plan-entry--family"
+                            : `meal-plan-entry--member-${entry.household_member_id % 4}`
+                        }`}
+                        key={entry.id}
+                      >
                         <span>{entry.meal_slot}</span>
                         <strong>{entry.recipe_name}</strong>
+                        <small>{entry.household_member_name ?? "Family"}</small>
+                        <div className="meal-plan-entry__actions">
+                          <Button icon="pi pi-pencil" text rounded aria-label={`Edit ${entry.recipe_name}`} onClick={() => setEditingEntry(entry)} />
+                          <Button icon="pi pi-trash" text rounded severity="danger" aria-label={`Delete ${entry.recipe_name}`} loading={deletingEntryId === entry.id} disabled={deletingEntryId === entry.id} onClick={() => void handleDelete(entry)} />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -169,14 +213,22 @@ export function MealPlanPage() {
           })}
         </div>
       )}
-      <AddMealDialog
-        plannedFor={selectedDay ?? toDateParameter(weekStart)}
-        visible={selectedDay !== null}
-        onHide={() => setSelectedDay(null)}
-        onCreated={() =>
-          setRefreshVersion((currentVersion) => currentVersion + 1)
-        }
-      />
+      {(selectedDay || editingEntry) && (
+        <AddMealDialog
+          plannedFor={
+            editingEntry?.planned_for ?? selectedDay ?? toDateParameter(weekStart)
+          }
+          entry={editingEntry ?? undefined}
+          visible
+          onHide={() => {
+            setSelectedDay(null);
+            setEditingEntry(null);
+          }}
+          onCreated={() =>
+            setRefreshVersion((currentVersion) => currentVersion + 1)
+          }
+        />
+      )}
     </section>
   );
 }

@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from pydantic import BaseModel
 from pydantic import BaseModel, Field, field_validator
 from typing import Literal
 
@@ -43,6 +42,7 @@ class ShoppingListItemResponse(BaseModel):
     quantity: float
     unit: str | None
     category: str | None
+    store_name: str | None = None
     is_purchased: bool
     purchased_at: datetime | None
     created_at: datetime
@@ -67,13 +67,19 @@ def list_shopping_items(
                 shopping_list_items.quantity,
                 shopping_list_items.unit,
                 shopping_list_items.category,
+                stores.name AS store_name,
                 shopping_list_items.is_purchased,
                 shopping_list_items.purchased_at,
                 shopping_list_items.created_at
             FROM shopping_list_items
+            LEFT JOIN catalog_items
+                ON catalog_items.id = shopping_list_items.catalog_item_id
+            LEFT JOIN stores
+                ON stores.id = catalog_items.store_id
             WHERE (%s OR shopping_list_items.is_purchased = FALSE)
             ORDER BY
                 shopping_list_items.is_purchased,
+                stores.name NULLS LAST,
                 shopping_list_items.category NULLS LAST,
                 shopping_list_items.item_name,
                 shopping_list_items.id

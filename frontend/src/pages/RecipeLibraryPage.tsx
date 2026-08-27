@@ -5,7 +5,7 @@ import { Message } from "primereact/message";
 import { ProgressSpinner } from "primereact/progressspinner";
 
 import { CreateRecipeDialog } from "../components/CreateRecipeDialog";
-import { getRecipes } from "../api/client";
+import { getRecipe, getRecipes } from "../api/client";
 import type { RecipeDetail, RecipeSummary } from "../api/types";
 
 import "./RecipeLibraryPage.css";
@@ -15,6 +15,7 @@ export function RecipeLibraryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCreateDialogVisible, setIsCreateDialogVisible] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState<RecipeDetail | null>(null);
 
   useEffect(() => {
     async function loadRecipes() {
@@ -35,10 +36,18 @@ export function RecipeLibraryPage() {
 
   function handleRecipeCreated(recipe: RecipeDetail) {
     setRecipes((current) =>
-      [...current, recipe].sort((first, second) =>
+      [...current.filter((item) => item.id !== recipe.id), recipe].sort((first, second) =>
         first.name.localeCompare(second.name),
       ),
     );
+  }
+
+  async function handleEdit(recipeId: number) {
+    try {
+      setEditingRecipe(await getRecipe(recipeId));
+    } catch {
+      setErrorMessage("Unable to load this recipe for editing.");
+    }
   }
 
   return (
@@ -71,16 +80,14 @@ export function RecipeLibraryPage() {
           {recipes.map((recipe) => (
             <Card key={recipe.id} title={recipe.name}>
               <p>{recipe.instructions ?? "No instructions added yet."}</p>
+              <Button label="Edit" icon="pi pi-pencil" outlined size="small" onClick={() => void handleEdit(recipe.id)} />
             </Card>
           ))}
         </div>
       )}
 
-      <CreateRecipeDialog
-        visible={isCreateDialogVisible}
-        onHide={() => setIsCreateDialogVisible(false)}
-        onCreated={handleRecipeCreated}
-      />
+      {isCreateDialogVisible && <CreateRecipeDialog visible onHide={() => setIsCreateDialogVisible(false)} onCreated={handleRecipeCreated} />}
+      {editingRecipe && <CreateRecipeDialog recipeToEdit={editingRecipe} visible onHide={() => setEditingRecipe(null)} onCreated={(recipe) => { handleRecipeCreated(recipe); setEditingRecipe(null); }} />}
     </section>
   );
 }

@@ -25,12 +25,7 @@ function ShoppingListPage() {
   const [activeItemId, setActiveItemId] = useState<number | null>(null);
   const [isClearing, setIsClearing] = useState(false);
 
-  const loadShoppingListItems = useCallback(
-    async (showLoadingState = false) => {
-      if (showLoadingState) {
-        setIsLoading(true);
-      }
-
+  const loadShoppingListItems = useCallback(async () => {
       setLoadError(null);
 
       try {
@@ -42,18 +37,26 @@ function ShoppingListPage() {
         } else {
           setLoadError("Unable to load the shopping list.");
         }
-      } finally {
-        if (showLoadingState) {
-          setIsLoading(false);
-        }
       }
-    },
-    [],
-  );
+    }, []);
 
   useEffect(() => {
-    void loadShoppingListItems(true);
-  }, [loadShoppingListItems]);
+    async function loadInitialShoppingListItems() {
+      try {
+        setItems(await getShoppingListItems(true));
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          setLoadError("Your session has expired. Please sign in again.");
+        } else {
+          setLoadError("Unable to load the shopping list.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void loadInitialShoppingListItems();
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -257,8 +260,8 @@ function ShoppingListPage() {
                       <span>
                         <strong>{item.item_name}</strong>
                         <small>
-                          {item.category ?? "Uncategorized"} ·{" "}
-                          {formatQuantity(item)}
+                          {item.store_name ?? "Any store"} ·{" "}
+                          {item.category ?? "Uncategorized"} · {formatQuantity(item)}
                         </small>
                       </span>
                     </label>

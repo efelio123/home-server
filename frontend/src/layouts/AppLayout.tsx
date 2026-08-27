@@ -23,6 +23,12 @@ const navigationItems = [
     label: "Recipes",
     icon: "pi pi-book",
   },
+  {
+    to: "/pantry",
+    label: "Pantry",
+    icon: "pi pi-box",
+  },
+  { to: "/household-members", label: "Household Members", icon: "pi pi-users" },
 ];
 
 function AppLayout({ username, onLogout }: AppLayoutProps) {
