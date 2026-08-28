@@ -3,12 +3,12 @@ import { Navigate, Route, Routes } from "react-router";
 import { ApiError, getCurrentUser, logout } from "./api/client";
 import type { AuthenticatedUser } from "./api/types";
 import AppLayout from "./layouts/AppLayout";
-import ChoresPage from "./pages/ChoresPage";
 import DashboardPage from "./pages/DashboardPage";
 import ShoppingListPage from "./pages/ShoppingListPage";
 import LoginPage from "./pages/LoginPage";
 import MealPlanPage from "./pages/MealPlanPage";
 import RecipeLibraryPage from "./pages/RecipeLibraryPage";
+import RecipeExplorePage from "./pages/RecipeExplorePage";
 import PantryPage from "./pages/PantryPage";
 import HouseholdMembersPage from "./pages/HouseholdMembersPage";
 
@@ -78,10 +78,11 @@ function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-        <Route path="chores" element={<ChoresPage />} />
         <Route path="shopping-list" element={<ShoppingListPage />} />
         <Route path="meal-plan" element={<MealPlanPage />} />
-        <Route path="recipes" element={<RecipeLibraryPage />} />
+        <Route path="recipes" element={<Navigate to="/recipes/library" replace />} />
+        <Route path="recipes/library" element={<RecipeLibraryPage />} />
+        <Route path="recipes/explore" element={<RecipeExplorePage />} />
         <Route path="pantry" element={<PantryPage />} />
         <Route path="household-members" element={<HouseholdMembersPage />} />
       </Route>

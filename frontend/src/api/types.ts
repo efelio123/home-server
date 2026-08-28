@@ -17,6 +17,8 @@ export type ShoppingListItem = {
   unit: string | null;
   category: string | null;
   store_name: string | null;
+  meal_usage_count: number;
+  meal_usages: MealUsage[];
   is_purchased: boolean;
   purchased_at: string | null;
   created_at: string;
@@ -41,6 +43,16 @@ export type Weather = {
   is_day: boolean;
   today_high_f: number;
   today_low_f: number;
+};
+
+export type MealUsage = {
+  planned_for: string;
+  recipe_name: string;
+};
+
+export type AddCatalogItemToShoppingListInput = {
+  catalog_item_id: number;
+  quantity: number;
 };
 
 export interface MealPlanIngredient {

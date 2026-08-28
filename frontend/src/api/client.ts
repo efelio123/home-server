@@ -3,6 +3,7 @@ import type {
     ShoppingListItem,
     AuthenticatedUser,
     CreateShoppingListItemInput,
+    AddCatalogItemToShoppingListInput,
     Weather,
     MealPlanEntry,
     RecipeDetail,
@@ -165,6 +166,18 @@ export function createMealPlanEntry(input: CreateMealPlanEntryInput) {
   });
 }
 
+export function addCatalogItemToShoppingList(
+  item: AddCatalogItemToShoppingListInput,
+): Promise<ShoppingListItem> {
+  return apiRequest<ShoppingListItem>("/shopping-list-items/from-catalog", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(item),
+  });
+}
+
 export function getHouseholdMembers(): Promise<HouseholdMember[]> {
   return apiRequest<HouseholdMember[]>("/household-members");
 }
@@ -240,6 +253,12 @@ export function updateRecipe(
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
+  });
+}
+
+export function archiveRecipe(recipeId: number): Promise<void> {
+  return apiRequest<void>(`/recipes/${recipeId}/archive`, {
+    method: "PATCH",
   });
 }
 

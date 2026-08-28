@@ -5,7 +5,7 @@ import { Message } from "primereact/message";
 import { ProgressSpinner } from "primereact/progressspinner";
 
 import { CreateRecipeDialog } from "../components/CreateRecipeDialog";
-import { getRecipe, getRecipes } from "../api/client";
+import { archiveRecipe, getRecipe, getRecipes } from "../api/client";
 import type { RecipeDetail, RecipeSummary } from "../api/types";
 
 import "./RecipeLibraryPage.css";
@@ -16,6 +16,7 @@ export function RecipeLibraryPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCreateDialogVisible, setIsCreateDialogVisible] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<RecipeDetail | null>(null);
+  const [archivingRecipeId, setArchivingRecipeId] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadRecipes() {
@@ -50,6 +51,23 @@ export function RecipeLibraryPage() {
     }
   }
 
+  async function handleArchive(recipe: RecipeSummary) {
+    if (!window.confirm(`Archive "${recipe.name}"? It will remain on existing meal plans but cannot be selected for new meals.`)) {
+      return;
+    }
+
+    setArchivingRecipeId(recipe.id);
+    setErrorMessage(null);
+    try {
+      await archiveRecipe(recipe.id);
+      setRecipes((current) => current.filter((item) => item.id !== recipe.id));
+    } catch {
+      setErrorMessage("Unable to archive this recipe.");
+    } finally {
+      setArchivingRecipeId(null);
+    }
+  }
+
   return (
     <section className="recipe-library-page">
       <div className="recipe-library-page__header">
@@ -79,8 +97,20 @@ export function RecipeLibraryPage() {
         <div className="recipe-library-grid">
           {recipes.map((recipe) => (
             <Card key={recipe.id} title={recipe.name}>
-              <p>{recipe.instructions ?? "No instructions added yet."}</p>
-              <Button label="Edit" icon="pi pi-pencil" outlined size="small" onClick={() => void handleEdit(recipe.id)} />
+              <p className="recipe-library-card__instructions">{recipe.instructions ?? "No instructions added yet."}</p>
+              <div className="recipe-library-card__actions">
+                <Button label="Edit" icon="pi pi-pencil" outlined size="small" onClick={() => void handleEdit(recipe.id)} />
+                <Button
+                  label="Delete"
+                  icon="pi pi-box"
+                  severity="danger"
+                  outlined
+                  size="small"
+                  loading={archivingRecipeId === recipe.id}
+                  disabled={archivingRecipeId !== null}
+                  onClick={() => void handleArchive(recipe)}
+                />
+              </div>
             </Card>
           ))}
         </div>

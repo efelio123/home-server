@@ -138,7 +138,12 @@ def insert_ingredients(connection, recipe_id: int, ingredients):
 def list_recipes(_username: str = Depends(require_login)):
     with get_db_connection() as connection:
         return connection.execute(
-            "SELECT id, name, instructions, created_at FROM recipes ORDER BY name"
+            """
+            SELECT id, name, instructions, created_at
+            FROM recipes
+            WHERE is_active = TRUE
+            ORDER BY name
+            """
         ).fetchall()
 
 
@@ -189,3 +194,19 @@ def update_recipe(recipe_id: int, recipe: RecipeCreate, _username: str = Depends
         connection.execute("DELETE FROM recipe_ingredients WHERE recipe_id = %s", (recipe_id,))
         updated["ingredients"] = insert_ingredients(connection, recipe_id, ingredients)
         return updated
+
+
+@router.patch("/{recipe_id}/archive", status_code=status.HTTP_204_NO_CONTENT)
+def archive_recipe(recipe_id: int, _username: str = Depends(require_login)):
+    with get_db_connection() as connection:
+        archived = connection.execute(
+            """
+            UPDATE recipes
+            SET is_active = FALSE
+            WHERE id = %s AND is_active = TRUE
+            RETURNING id
+            """,
+            (recipe_id,),
+        ).fetchone()
+        if archived is None:
+            raise HTTPException(status_code=404, detail="Active recipe not found.")
