@@ -37,7 +37,7 @@ function AppLayout({ username, onLogout }: AppLayoutProps) {
       <aside className="sidebar">
         <div className="sidebar__brand">
           <i className="pi pi-home" aria-hidden="true" />
-          <span>Home Server</span>
+          <span>Family Dashboard</span>
         </div>
 
         <nav aria-label="Main navigation">
