@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+environment_file="${ENV_FILE:-.env}"
+
+if [[ ! -f "$environment_file" ]]; then
+  echo "Environment file not found: $environment_file" >&2
+  exit 1
+fi
+
 set -a
-source .env
+source "$environment_file"
 set +a
+
+compose=(docker compose --env-file "$environment_file")
 
 migration_directory="db/migrations"
 
-docker compose exec -T postgres psql \
+"${compose[@]}" exec -T postgres psql \
   -v ON_ERROR_STOP=1 \
   -U "$POSTGRES_USER" \
   -d "$POSTGRES_DB" <<'SQL'
@@ -23,7 +32,7 @@ for migration_file in "$migration_directory"/*.sql; do
   migration_name="$(basename "$migration_file")"
 
   is_applied="$(
-    docker compose exec -T postgres psql \
+    "${compose[@]}" exec -T postgres psql \
       -At \
       -U "$POSTGRES_USER" \
       -d "$POSTGRES_DB" \
@@ -48,7 +57,7 @@ SQL
     cat "$migration_file"
     printf "INSERT INTO schema_migrations (version) VALUES (:'migration_name');\n"
     printf 'COMMIT;\n'
-  } | docker compose exec -T postgres psql \
+  } | "${compose[@]}" exec -T postgres psql \
     -v ON_ERROR_STOP=1 \
     -U "$POSTGRES_USER" \
     -d "$POSTGRES_DB" \
