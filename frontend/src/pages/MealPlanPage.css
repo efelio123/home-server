@@ -41,6 +41,8 @@
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
   border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
   min-height: 12rem;
   padding: 0.9rem;
 }
@@ -66,6 +68,7 @@
 .meal-plan-day__entries {
   display: grid;
   gap: 0.5rem;
+  margin-bottom: 15px;
 }
 
 .meal-plan-entry {
@@ -76,8 +79,41 @@
   padding: 0.6rem;
 }
 
+.meal-plan-entry--family {
+  background: var(--primary-50);
+}
+
+.meal-plan-entry--member-0 {
+  background: #fef3c7;
+}
+
+.meal-plan-entry--member-1 {
+  background: #dcfce7;
+}
+
+.meal-plan-entry--member-2 {
+  background: #fce7f3;
+}
+
+.meal-plan-entry--member-3 {
+  background: #e0e7ff;
+}
+
 .meal-plan-entry span {
   color: var(--primary-700);
   font-size: 0.75rem;
   text-transform: capitalize;
+}
+
+.meal-plan-entry small {
+  color: var(--text-color-secondary);
+}
+
+.meal-plan-entry__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.meal-plan-day__add {
+  margin-top: auto;
 }

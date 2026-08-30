@@ -1,3 +1,75 @@
+.shopping-list-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.shopping-list-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.shopping-list-add {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.shopping-list-add__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(8rem, 0.25fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.shopping-list-add__item-field,
+.shopping-list-add__quantity-field {
+  min-width: 0;
+}
+
+.shopping-list-add .p-float-label,
+.shopping-list-add .p-dropdown,
+.shopping-list-add .p-inputnumber,
+.shopping-list-add .p-inputnumber-input {
+  width: 100%;
+}
+
+.shopping-list-add__dropdown-footer {
+  padding: 0.75rem;
+  border-top: 1px solid var(--surface-border);
+}
+
+.shopping-list-add__dropdown-footer .p-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.shopping-list-list-controls {
+  display: flex;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.shopping-list-store-filter {
+  width: min(14rem, 100%);
+}
+
+.shopping-list-store-filter .p-float-label,
+.shopping-list-store-filter .p-dropdown {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .shopping-list-add__row {
+    grid-template-columns: 1fr;
+  }
+
+  .shopping-list-add__row > .p-button {
+    justify-content: center;
+  }
+}
+
 .clear-list-button {
   display: flex;
   align-items: center;
@@ -60,6 +132,25 @@
 
 .shopping-list-item__label small {
   color: #52607a;
+}
+
+.shopping-list-item__recipe-usage {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  color: #52607a;
+  cursor: help;
+  font-size: 0.8rem;
+}
+
+.shopping-list-item__recipe-usage:focus-visible {
+  outline: 2px solid #0e7490;
+  outline-offset: 2px;
+}
+
+.shopping-list-item__meal-tooltip {
+  white-space: pre-line;
 }
 
 .shopping-list-item--purchased strong {

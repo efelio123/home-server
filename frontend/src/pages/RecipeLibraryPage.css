@@ -31,3 +31,29 @@
   gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 }
+
+.recipe-library-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.recipe-library-card__instructions {
+  height: 50px;
+  line-height: 24px;
+  overflow: hidden;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.recipe-library-grid .p-card-title {
+  height: 48px;
+  line-height: 24px;
+  overflow: hidden;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}

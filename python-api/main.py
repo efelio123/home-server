@@ -17,7 +17,7 @@ from threading import Lock
 import httpx
 
 from database import get_db_connection
-from routers import auth as auth_router, recipes, shopping_list, chores, weather, notes, meal_plan
+from routers import auth as auth_router, recipes, shopping_list, chores, weather, notes, meal_plan, catalog_items, household_members, stores, units
 
 
 load_dotenv()
@@ -28,7 +28,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[os.environ["FRONTEND_ORIGIN"]],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Content-Type"],
 )
 
@@ -36,6 +36,10 @@ app.include_router(auth_router.router)
 app.include_router(recipes.router)
 app.include_router(shopping_list.router)
 app.include_router(meal_plan.router)
+app.include_router(catalog_items.router)
+app.include_router(household_members.router)
+app.include_router(units.router)
+app.include_router(stores.router)
 app.include_router(chores.router)
 app.include_router(weather.router)
 app.include_router(notes.router)

@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react";
 import {
   ApiError,
-  getOpenChores,
+  getMealPlanEntries,
   getShoppingListItems,
   getWeather,
 } from "../api/client";
-import type { Chore, ShoppingListItem, Weather } from "../api/types";
+import type { MealPlanEntry, ShoppingListItem, Weather } from "../api/types";
 import DashboardCard from "../components/DashboardCard";
-
-function formatDueDate(dueDate: string | null) {
-  if (!dueDate) {
-    return "No due date";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(`${dueDate}T00:00:00`));
-}
 
 function formatQuantity(quantity: number, unit: string | null) {
   return unit ? `${quantity} ${unit}` : String(quantity);
+}
+
+function localDateString(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatMealSlot(mealSlot: string) {
+  return `${mealSlot.charAt(0).toUpperCase()}${mealSlot.slice(1)}`;
 }
 
 function weatherIcon(condition: string, isDay: boolean) {
@@ -53,8 +53,8 @@ function weatherIcon(condition: string, isDay: boolean) {
 }
 
 function DashboardPage() {
-  const [chores, setChores] = useState<Chore[]>([]);
   const [shoppingItems, setShoppingItems] = useState<ShoppingListItem[]>([]);
+  const [todaysMeals, setTodaysMeals] = useState<MealPlanEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // weather
@@ -65,13 +65,15 @@ function DashboardPage() {
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [loadedChores, loadedShoppingItems] = await Promise.all([
-          getOpenChores(),
+        const today = localDateString(new Date());
+        const [loadedShoppingItems, mealPlanEntries] = await Promise.all([
           getShoppingListItems(),
+          getMealPlanEntries(today),
         ]);
-
-        setChores(loadedChores);
         setShoppingItems(loadedShoppingItems);
+        setTodaysMeals(
+          mealPlanEntries.filter((entry) => entry.planned_for === today),
+        );
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
           setErrorMessage(
@@ -110,8 +112,8 @@ function DashboardPage() {
   return (
     <>
       <header className="page-header">
-        <p className="page-header__eyebrow">HOME SERVER</p>
-        <h1>Family Dashboard</h1>
+        <p className="page-header__eyebrow">Herrera Family</p>
+        <h1>Dashboard</h1>
         <p className="page-header__subtitle">
           A shared view of what matters today.
         </p>
@@ -119,29 +121,29 @@ function DashboardPage() {
 
       <section className="dashboard-grid" aria-label="Dashboard cards">
         <DashboardCard title="Today" icon="pi pi-calendar">
-          <p>Today</p>
-        </DashboardCard>
-
-        <DashboardCard title="Chores" icon="pi pi-check-square">
-          {isLoading && <p>Loading chores…</p>}
+          {isLoading && <p>Loading today’s meals…</p>}
 
           {!isLoading && errorMessage && (
             <p className="dashboard-card__error">{errorMessage}</p>
           )}
 
-          {!isLoading && !errorMessage && chores.length === 0 && (
-            <p>No open chores. Nice work!</p>
+          {!isLoading && !errorMessage && todaysMeals.length === 0 && (
+            <p>No plans for today.</p>
           )}
 
-          {!isLoading && !errorMessage && chores.length > 0 && (
+          {!isLoading && !errorMessage && todaysMeals.length > 0 && (
             <ul className="dashboard-card__list">
-              {chores.map((chore) => (
-                <li key={chore.id}>
+              {todaysMeals.map((entry) => (
+                <li key={entry.id}>
                   <div>
-                    <strong>{chore.title}</strong>
-                    <span>{chore.assignee_name ?? "Unassigned"}</span>
+                    <strong>{formatMealSlot(entry.meal_slot)}</strong>
+                    <span>
+                      {entry.recipe_name}
+                      {entry.household_member_name
+                        ? ` · ${entry.household_member_name}`
+                        : " · Family"}
+                    </span>
                   </div>
-                  <time>{formatDueDate(chore.due_date)}</time>
                 </li>
               ))}
             </ul>

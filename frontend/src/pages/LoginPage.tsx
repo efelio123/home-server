@@ -41,8 +41,8 @@ return (
     <main className="login-page">
       <section className="login-card">
         <i className="pi pi-home login-card__icon" aria-hidden="true" />
-        <p className="page-header__eyebrow">HOME SERVER</p>
-        <h1>Family Dashboard</h1>
+        <p className="page-header__eyebrow">Home Dashboard</p>
+        <h1>Herrera Family</h1>
         <p className="page-header__subtitle">Sign in to continue.</p>
 
         <form className="login-form" onSubmit={handleSubmit}>

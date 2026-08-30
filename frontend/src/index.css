@@ -65,6 +65,48 @@ select {
   background: #1f526b;
 }
 
+.sidebar__recipe-toggle,
+.sidebar__recipe-sublink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+
+.sidebar__recipe-toggle > :last-child {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+.sidebar__recipe-toggle:hover,
+.sidebar__recipe-toggle--active,
+.sidebar__recipe-sublink:hover,
+.sidebar__recipe-sublink--active {
+  color: #fff;
+  background: #1f526b;
+}
+
+.sidebar__recipe-subnav {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.25rem 0 0;
+  padding: 0 0 0 1.25rem;
+  list-style: none;
+}
+
+.sidebar__recipe-sublink {
+  padding-block: 0.55rem;
+}
+
 .page-content {
   width: 80%;
   margin: 0 auto;
@@ -266,18 +308,6 @@ h1 {
   justify-content: center;
   gap: 0.5rem;
   background: #1f526b;
-}
-
-.shopping-list-page {
-  display: grid;
-  grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1.2fr);
-  gap: 1.25rem;
-  align-items: start;
-}
-
-.shopping-list-form {
-  display: grid;
-  gap: 0.55rem;
 }
 
 .shopping-list-form input {
