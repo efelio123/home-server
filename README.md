@@ -67,6 +67,21 @@ The `com.felipe.homeserver-backup` LaunchAgent runs the script each day at
 3:15 AM. Its output is written to `logs/backup.log` and
 `logs/backup-error.log`.
 
+Its `ProgramArguments` must explicitly use the production environment file:
+
+```xml
+<key>ProgramArguments</key>
+<array>
+  <string>/bin/zsh</string>
+  <string>-lc</string>
+  <string>cd /path/to/home-server &amp;&amp; ENV_FILE=.env.production ./backup-db.sh</string>
+</array>
+```
+
+The production environment selects both `compose.yaml` and
+`compose.production.yaml`, matching the deployment command. The script keeps
+using `.env` when `ENV_FILE` is not provided for development compatibility.
+
 Verify a backup without touching production by restoring it into a disposable
 database:
 
