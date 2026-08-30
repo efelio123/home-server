@@ -5,6 +5,7 @@
 frontend/.env
 frontend/.env.*
 !frontend/.env.example
+!.env.production.example
 
 # Local backups, logs, and cloud-sync artifacts
 backups/
